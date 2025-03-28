@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Получаем основные элементы
   const gallery = document.querySelector(".gallery");
   const track = document.querySelector(".gallery-track");
   const cards = document.querySelectorAll(".card");
   const nav = document.querySelector("nav");
   
-
   let startY = 0;
   let endY = 0;
   let raf = null;
@@ -12,15 +12,19 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastScroll = 0;
   const threshold = 10;
   
+  // Функция линейной интерполяции
   function lerp(start, end, factor) {
     return start + (end - start) * factor;
   }
 
+  // Обновление анимации прокрутки
   function updateScroll() {
     startY = lerp(startY, endY, easing);
+    gallery.style.height = `${track.clientHeight}px`;
     track.style.transform = `translateY(-${startY}px)`;
+    activateParallax();
 
-    if (Math.abs(Math.round(startY) - window.scrollY) < 1) {
+    if (Math.abs(startY - window.scrollY) < 0.1) {
       cancelAnimationFrame(raf);
       raf = null;
     } else {
@@ -28,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Запуск анимации прокрутки
   function startScroll() {
     document.addEventListener("scroll", () => {
       endY = window.scrollY;
@@ -35,6 +40,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Функция параллакса для карточек
+  function parallax(card) {
+    const wrapper = card.querySelector('.card-image-wrapper');
+    const diff = card.offsetHeight - wrapper.offsetHeight;
+    const { top } = card.getBoundingClientRect();
+    const progress = top / window.innerHeight;
+    const yPos = diff * progress;
+    wrapper.style.transform = `translateY(${yPos}px)`;
+  }
+
+  // Активация параллакса
+  const activateParallax = () => cards.forEach(parallax);
+
+  // Создание оверлея для увеличенного изображения
   function createOverlay() {
     let overlay = document.createElement("div");
     overlay.classList.add("image-overlay");
@@ -44,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       left: 0,
       width: "100vw",
       height: "100vh",
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
       zIndex: "999",
       opacity: "0",
       transition: "opacity 0.3s ease-in-out",
@@ -58,13 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return overlay;
   }
 
+  // Функция увеличения изображения
   function zoomImage(img, isMobile = false) {
     const rect = img.getBoundingClientRect();
     const zoomedImg = img.cloneNode();
     zoomedImg.classList.add("zoomed");
     const overlay = createOverlay();
-
-    
 
     Object.assign(zoomedImg.style, {
       position: "fixed",
@@ -72,14 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
       left: `${rect.left}px`,
       width: `${rect.width}px`,
       height: `${rect.height}px`,
-      transform: "none",
       transition: "all 0.6s cubic-bezier(0.25, 1, 0.5, 1)",
       zIndex: "1000",
       objectFit: "cover",
       borderRadius: "20px",
       opacity: "0",
       boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-      pointerEvents: "none"
+      pointerEvents: "none",
+      cursor: "pointer"
     });
 
     document.body.appendChild(zoomedImg);
@@ -89,37 +107,41 @@ document.addEventListener("DOMContentLoaded", () => {
       zoomedImg.style.left = "50%";
       zoomedImg.style.width = isMobile ? "90vw" : "70vw";
       zoomedImg.style.height = isMobile ? "90vh" : "80vh";
-      zoomedImg.style.transform = "translate(-50%, -50%) scale(1.05)";
+      zoomedImg.style.transform = "translate(-50%, -50%)";
       zoomedImg.style.opacity = "1";
       zoomedImg.style.pointerEvents = "auto";
     }, 10);
 
+    // Закрытие увеличенного изображения
     function closeZoomedImage(zoomedImg, overlay, rect) {
-    zoomedImg.style.top = `${rect.top}px`;
-    zoomedImg.style.left = `${rect.left}px`;
-    zoomedImg.style.width = `${rect.width}px`;
-    zoomedImg.style.height = `${rect.height}px`;
-    zoomedImg.style.transform = "none";
-    zoomedImg.style.opacity = "0";
-    overlay.style.opacity = "0";
-    overlay.style.pointerEvents = "none";
-    setTimeout(() => {
-      zoomedImg.remove();
-      overlay.remove();
-    }, 600);
+      zoomedImg.style.top = `${rect.top}px`;
+      zoomedImg.style.left = `${rect.left}px`;
+      zoomedImg.style.width = `${rect.width}px`;
+      zoomedImg.style.height = `${rect.height}px`;
+      zoomedImg.style.transform = "none";
+      zoomedImg.style.opacity = "0";
+      overlay.style.opacity = "0";
+      overlay.style.pointerEvents = "none";
+      setTimeout(() => {
+        zoomedImg.remove();
+        overlay.remove();
+      }, 600);
+    }
+
+    overlay.addEventListener("click", () => closeZoomedImage(zoomedImg, overlay, rect));
+    zoomedImg.addEventListener("click", () => closeZoomedImage(zoomedImg, overlay, rect));
   }
 
-  overlay.addEventListener("click", () => closeZoomedImage(zoomedImg, overlay, rect));
-  zoomedImg.addEventListener("click", () => closeZoomedImage(zoomedImg, overlay, rect));
-  }
-
+  // Добавление обработчика клика для изображений в карточках
   document.querySelectorAll(".card-image-wrapper img").forEach(img => {
+    img.style.cursor = "pointer";
     img.addEventListener("click", event => {
       event.preventDefault();
       zoomImage(img, window.matchMedia("(max-width: 768px)").matches);
     });
   });
 
+  // Скрытие/появление навигации при прокрутке
   window.addEventListener("scroll", () => {
     let currentScroll = window.scrollY;
     nav.style.transition = "transform 0.4s ease-in-out";
@@ -129,10 +151,12 @@ document.addEventListener("DOMContentLoaded", () => {
     lastScroll = currentScroll;
   });
 
+  // Инициализация галереи
   function init() {
     track.style.willChange = "transform";
     gallery.style.height = `${track.scrollHeight}px`;
     startScroll();
+    activateParallax();
   }
 
   init();
