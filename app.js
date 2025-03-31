@@ -1,3 +1,6 @@
+
+// Плавная анимация прокрутки и параллакс для карточек
+
 document.addEventListener("DOMContentLoaded", () => {
   // Получаем основные элементы
   const gallery = document.querySelector(".gallery");
@@ -8,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let startY = 0;
   let endY = 0;
   let raf = null;
-  const easing = 0.1;
+  const easing = 0.04; // Уменьшено значение для более плавной анимации
   let lastScroll = 0;
   const threshold = 10;
   
@@ -63,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
       left: 0,
       width: "100vw",
       height: "100vh",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
       zIndex: "999",
       opacity: "0",
       transition: "opacity 0.3s ease-in-out",
@@ -105,9 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       zoomedImg.style.top = "50%";
       zoomedImg.style.left = "50%";
-      zoomedImg.style.width = isMobile ? "90vw" : "70vw";
-      zoomedImg.style.height = isMobile ? "90vh" : "80vh";
-      zoomedImg.style.transform = "translate(-50%, -50%)";
+      zoomedImg.style.width = isMobile ? "120vw" : "54vw";
+      zoomedImg.style.height = isMobile ? "56vh" : "78vh";
+      zoomedImg.style.transform = isMobile 
+        ? "translate(-50%, -50%) rotate(90deg)" 
+        : "translate(-50%, -50%)";
       zoomedImg.style.opacity = "1";
       zoomedImg.style.pointerEvents = "auto";
     }, 10);
@@ -144,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Скрытие/появление навигации при прокрутке
   window.addEventListener("scroll", () => {
     let currentScroll = window.scrollY;
-    nav.style.transition = "transform 0.4s ease-in-out";
+    nav.style.transition = "transform 0.5s ease-in-out";
     if (Math.abs(currentScroll - lastScroll) > threshold) {
       nav.style.transform = currentScroll > lastScroll ? "translateY(-100%)" : "translateY(0)";
     }
@@ -161,3 +166,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   init();
 });
+
+
+function updateScroll() {
+  startY = lerp(startY, endY, easing);
+  gallery.style.height = `${track.clientHeight}px`;
+  track.style.transform = `translateY(-${startY}px)`;
+
+  activateParallax();
+
+  // Остановка анимации, если движение почти прекратилось
+  if (Math.abs(startY - endY) < 0.05) {
+    cancelAnimationFrame(raf);
+    raf = null;
+  } else {
+    raf = requestAnimationFrame(updateScroll);
+  }
+}
