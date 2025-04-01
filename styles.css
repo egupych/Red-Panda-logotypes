@@ -54,14 +54,16 @@ body {
   }
 } 
 
-.card .card-image-wrapper img {
+/* Увеличение при наведении на карточку */
+
+/* .card .card-image-wrapper img {
 	transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
 .card:hover .card-image-wrapper img {
 	transform: scale(1.14);
 	transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  }
+  } */
 
 
 
