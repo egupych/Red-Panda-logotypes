@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let startY = 0;
   let endY = 0;
   let raf = null;
-  const easing = 0.04; // Уменьшено значение для более плавной анимации
+  const easing = 0.05; // Уменьшено значение для более плавной анимации
   let lastScroll = 0;
   const threshold = 10;
   
