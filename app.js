@@ -108,10 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       zoomedImg.style.top = "50%";
       zoomedImg.style.left = "50%";
-      zoomedImg.style.width = isMobile ? "100vw" : "54vw"; 
+      zoomedImg.style.width = isMobile ? "140vw" : "54vw"; 
       zoomedImg.style.height = isMobile ? "auto" : "78vh"; 
       zoomedImg.style.transform = isMobile 
-        ? "translate(-50%, -50%) rotate(90deg)" 
+        ? "translate(-50%, -50%)" 
         : "translate(-50%, -50%)";
       zoomedImg.style.opacity = "1";
       zoomedImg.style.pointerEvents = "auto";
